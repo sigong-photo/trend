@@ -622,6 +622,9 @@
         if (topic.product_url.includes("melon.com")) {
           nolBtn.className = "portal-btn melon-ticket-btn";
           nolBtn.innerHTML = "<span>🍈</span> 멜론 티켓 오픈소식 바로가기";
+        } else if (topic.product_url.includes("yes24.com")) {
+          nolBtn.className = "portal-btn yes24-ticket-btn";
+          nolBtn.innerHTML = "<span>🎟️</span> 예스24 티켓 오픈안내 바로가기";
         } else {
           nolBtn.className = "portal-btn nol-ticket-btn";
           nolBtn.innerHTML = "<span>🎟️</span> 놀 티켓 예매 페이지";
