@@ -73,6 +73,13 @@ async def read_dashboard(request: Request, category: str = "전체", sort: str =
                 -int(x.get("melon_csoon_id", 0))
             )
         )
+    elif category == "예스24 티켓":
+        filtered.sort(
+            key=lambda x: (
+                x.get("yes24_order", 999),
+                -int(x.get("yes24_id", 0))
+            )
+        )
     elif sort == "register" or category in ["놀 티켓 오픈예정", "콘서트", "공연", "전시"]:
         filtered.sort(
             key=lambda x: (
@@ -86,7 +93,7 @@ async def read_dashboard(request: Request, category: str = "전체", sort: str =
     trend_items = [t for t in filtered if t.get("section") == "trend"]
 
     categories = [
-        "전체", "✨ 신규", "멜론 티켓 오픈소식", "놀 티켓 오픈예정", "종료 임박 콘서트", "종료 임박 전시", "콘서트", "공연", "전시", "팝업",
+        "전체", "✨ 신규", "멜론 티켓 오픈소식", "예스24 티켓", "놀 티켓 오픈예정", "종료 임박 콘서트", "종료 임박 전시", "콘서트", "공연", "전시", "팝업",
         "축제", "여행", "먹거리", "맛집", "쇼핑", "건강", "부동산", "생활정보"
     ]
 

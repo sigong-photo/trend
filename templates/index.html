@@ -75,7 +75,7 @@
     <!-- 카테고리 필터 탭 -->
     <nav class="category-tabs">
       {% for cat in categories %}
-        <a href="/?category={{ cat }}" class="tab-btn {% if cat == current_category %}active{% endif %} {% if cat == '✨ 신규' %}tab-btn-new{% elif cat == '멜론 티켓 오픈소식' %}tab-btn-melon{% elif cat == '종료 임박 콘서트' %}tab-btn-urgent{% elif cat == '종료 임박 전시' %}tab-btn-exhibition{% endif %}">
+        <a href="/?category={{ cat }}" class="tab-btn {% if cat == current_category %}active{% endif %} {% if cat == '✨ 신규' %}tab-btn-new{% elif cat == '멜론 티켓 오픈소식' %}tab-btn-melon{% elif cat == '예스24 티켓' %}tab-btn-yes24{% elif cat == '종료 임박 콘서트' %}tab-btn-urgent{% elif cat == '종료 임박 전시' %}tab-btn-exhibition{% endif %}">
           {{ cat }}
         </a>
       {% endfor %}
@@ -491,6 +491,9 @@
           if (topic.product_url.includes("melon.com")) {
             nolBtn.className = "portal-btn melon-ticket-btn";
             nolBtn.innerHTML = "<span>🍈</span> 멜론 티켓 오픈소식 바로가기";
+          } else if (topic.product_url.includes("yes24.com")) {
+            nolBtn.className = "portal-btn yes24-ticket-btn";
+            nolBtn.innerHTML = "<span>🎟️</span> 예스24 티켓 오픈안내 바로가기";
           } else {
             nolBtn.className = "portal-btn nol-ticket-btn";
             nolBtn.innerHTML = "<span>🎟️</span> 놀 티켓 예매 페이지";

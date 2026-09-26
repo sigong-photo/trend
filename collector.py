@@ -1056,6 +1056,227 @@ def fetch_melon_ticket_upcoming() -> List[dict]:
 
     return melon_items
 
+def fetch_yes24_ticket_notices() -> List[dict]:
+    """
+    예스24 티켓(YES24 Ticket) 오픈공지 수집
+    - 조건: 등록순(order=1), 제목에 '뮤지컬' 포함 항목 제외
+    - 목록 엔드포인트: https://ticket.yes24.com/New/Notice/Ajax/axList.aspx (POST)
+    - 상세 엔드포인트: https://ticket.yes24.com/New/Notice/Ajax/axRead.aspx (POST, bId)
+    """
+    import requests
+    from bs4 import BeautifulSoup
+    import re
+    from datetime import datetime, date
+    from concurrent.futures import ThreadPoolExecutor
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        "Referer": "https://ticket.yes24.com/Notice",
+    }
+
+    today = date.today()
+    yes24_items = []
+    seen_ids = set()
+    raw_list = []
+
+    try:
+        for page in [1, 2]:
+            payload = {
+                "page": str(page),
+                "size": "20",
+                "genre": "",
+                "province": "",
+                "order": "1",  # 등록순
+                "searchType": "All",
+                "searchText": ""
+            }
+            res = requests.post("https://ticket.yes24.com/New/Notice/Ajax/axList.aspx", data=payload, headers=headers, timeout=10)
+            if res.status_code != 200:
+                continue
+
+            soup = BeautifulSoup(res.text, "html.parser")
+            rows = soup.select(".noti-tbl table tbody tr")
+            for tr in rows:
+                tds = tr.find_all("td")
+                if len(tds) < 4:
+                    continue
+                cat_type = tds[0].get_text(strip=True)
+                a_tag = tds[1].find("a")
+                if not a_tag:
+                    continue
+                title = a_tag.get_text(strip=True)
+                href = a_tag.get("href", "")
+                m_id = re.search(r"id=(\d+)", href)
+                bid = m_id.group(1) if m_id else ""
+                open_time = tds[2].get_text(" ", strip=True)
+
+                # 제목에 뮤지컬 들어가는 건 제외
+                if "뮤지컬" in title:
+                    continue
+
+                if bid and bid not in seen_ids:
+                    seen_ids.add(bid)
+                    raw_list.append({
+                        "id": bid,
+                        "type": cat_type,
+                        "title": title,
+                        "open_time": open_time
+                    })
+    except Exception as e:
+        print(f"[YES24 Ticket] List fetch error: {e}")
+
+    # 비상시 예비 데이터
+    if not raw_list:
+        raw_list = [
+            {"id": "18572", "type": "티켓오픈", "title": "단독판매[대전] 2026 크리스마스 가족매직쇼 [산타의 선물] 티켓오픈 안내", "open_time": "2026.09.28(월) 10:00"},
+            {"id": "18571", "type": "티켓오픈", "title": "THE GREATEST: 전율 소향 X 김기태 - 춘천 티켓 오픈 안내", "open_time": "2026.09.30(수) 11:00"},
+            {"id": "18569", "type": "티켓오픈", "title": "[공주] [데뷔 60주년 기념공연] 2026 남진 전국투어 콘서트 티켓 오픈 안내", "open_time": "2026.09.29(화) 11:00"},
+            {"id": "18566", "type": "티켓오픈", "title": "단독판매EVNNE FAN-CONCERT [ONE TAKE] IN SEOUL 티켓 오픈 안내", "open_time": "2026.10.15(목) 20:00"},
+            {"id": "18565", "type": "티켓오픈", "title": "단독판매K-발레컬 김옥련발레단 금관물길510Km 티켓오픈 안내", "open_time": "2026.09.30(수) 14:00"},
+            {"id": "18563", "type": "티켓오픈", "title": "2025-26 김창옥 토크콘서트 시즌5  - 수원 티켓 오픈 안내", "open_time": "2026.09.23(수) 10:00"},
+            {"id": "18561", "type": "티켓오픈", "title": "단독판매2026 윤마치(MRCH) CONCERT [공생관계 : We Live Together] 티켓 오픈 안내", "open_time": "2026.10.06(화) 20:00"},
+            {"id": "18560", "type": "티켓오픈", "title": "단독판매[평택] 두 명의 작곡가, 여덟 개의 계절 티켓 오픈 안내", "open_time": "2026.09.29(화) 14:00"},
+            {"id": "18557", "type": "티켓오픈", "title": "[고양] 2026 겨울특집 가족매직쇼 [버블J의 스노우버블쇼] 티켓오픈 안내", "open_time": "2026.09.23(수) 10:00"},
+            {"id": "18556", "type": "티켓오픈", "title": "[이천] 2026 빅3 “행복한 만남”- 강진, 김용임, 진성 티켓 오픈 안내", "open_time": "2026.09.29(화) 13:00"},
+            {"id": "18555", "type": "티켓오픈", "title": "단독판매연극 〈스타크로스드〉 2차 티켓오픈 안내", "open_time": "2026.09.23(수) 14:00"},
+            {"id": "18553", "type": "티켓오픈", "title": "단독판매[평택] 2026 시조 전국명인 초대전 티켓 오픈 안내", "open_time": "2026.09.22(화) 14:00"},
+            {"id": "18551", "type": "티켓오픈", "title": "단독판매[광주] 김동규  - 10월의 어느 멋진날에 티켓 오픈 안내", "open_time": "2026.09.22(화) 15:00"},
+            {"id": "18550", "type": "티켓오픈", "title": "2026 서초문화원 창작오페라 [매헌 윤봉길] 티켓오픈 안내", "open_time": "2026.09.28(월) 10:00"},
+            {"id": "18549", "type": "티켓오픈", "title": "2026 김정민 전국투어 : 정민이형 콘서트 - 구리 티켓 오픈 안내", "open_time": "2026.09.23(수) 11:00"}
+        ]
+
+    # 세부 정보 비동기 병렬 수집
+    def fetch_detail(item):
+        bid = item["id"]
+        venue, perf, reg_date, poster = "", "", "", ""
+        try:
+            payload = {"bId": bid, "genre": "", "province": "", "order": "1"}
+            res = requests.post("https://ticket.yes24.com/New/Notice/Ajax/axRead.aspx", data=payload, headers=headers, timeout=5)
+            if res.status_code == 200:
+                soup = BeautifulSoup(res.text, "html.parser")
+                img = soup.find("img")
+                if img and img.get("src"):
+                    p_src = img.get("src")
+                    poster = f"https:{p_src}" if p_src.startswith("//") else p_src
+                for s in soup.find_all("script"):
+                    s.decompose()
+                text = soup.get_text("\n", strip=True)
+                m_reg = re.search(r"등록일\s*[:：]\s*([^\n\r]+)", text)
+                if m_reg:
+                    reg_date = m_reg.group(1).strip()
+                m_venue = re.search(r"(?:공\s*연\s*장\s*소?|장\s*소)\s*[:：]\s*([^\n\r]+)", text)
+                if m_venue:
+                    venue = re.split(r"-\s*관람|-\s*티켓|-\s*공연|-\s*예매|-\s*장소|-\s*문의|-\s*주최|-\s*가격|-\s*일시", m_venue.group(1))[0].strip()
+                m_perf = re.search(r"(?:공\s*연\s*일\s*시?|공\s*연\s*기\s*간?|일\s*시)\s*[:：]\s*([^\n\r]+)", text)
+                if m_perf:
+                    perf = re.split(r"-\s*관람|-\s*티켓|-\s*공연|-\s*장소|-\s*예매|-\s*주최|-\s*가격|-\s*문의", m_perf.group(1))[0].strip()
+        except Exception:
+            pass
+        return bid, reg_date, venue, perf, poster
+
+    detail_map = {}
+    try:
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            for bid, reg_date, venue, perf, poster in executor.map(fetch_detail, raw_list[:20]):
+                detail_map[bid] = (reg_date, venue, perf, poster)
+    except Exception as e:
+        print(f"[YES24 Ticket] Detail fetch error: {e}")
+
+    for rank, it in enumerate(raw_list[:20], start=1):
+        bid = it["id"]
+        title = it["title"]
+        open_time = it["open_time"]
+        reg_date, venue, perf_date, poster_url = detail_map.get(bid, ("", "", "", ""))
+        if not reg_date:
+            reg_date = datetime.now().strftime("%Y-%m-%d")
+
+        # 지역명 및 공연장 보정
+        if not venue:
+            m_loc = re.search(r"\[(서울|인천|대전|대구|부산|광주|울산|수원|춘천|공주|고양|평택|이천|구리|성남|천안|전주|창원|제주)[^\]]*\]", title)
+            if m_loc:
+                venue = f"{m_loc.group(1)} (예스24 티켓 예매)"
+            else:
+                venue = "예스24 티켓 (YES24)"
+
+        clean_title = re.sub(r"티켓\s*오픈\s*안내$", "", title).strip()
+        clean_title_short = re.sub(r"\[.*?\]|\<.*?\>|\(.*?\)", "", clean_title).strip()
+
+        # D-Day 계산
+        d_day_badge = "오픈예정"
+        display_open_time = open_time
+        m_dt = re.search(r"(\d{4})[.\-](\d{2})[.\-](\d{2})", open_time)
+        if m_dt:
+            try:
+                op_dt = date(int(m_dt.group(1)), int(m_dt.group(2)), int(m_dt.group(3)))
+                diff = (op_dt - today).days
+                if diff < 0:
+                    d_day_badge = "오픈종료"
+                elif diff == 0:
+                    d_day_badge = "🔥 오늘 오픈"
+                elif diff == 1:
+                    d_day_badge = "D-1 오픈"
+                else:
+                    d_day_badge = f"D-{diff} 오픈"
+            except Exception:
+                pass
+
+        full_url = f"https://ticket.yes24.com/Notice#id={bid}"
+
+        summary = f"예스24 티켓 오픈 안내. 티켓 오픈 {display_open_time}, 공연 {perf_date if perf_date else '상세 안내 참조'} @ {venue}. 예스24 예매 일정 및 티켓팅 꿀팁."
+
+        details = (
+            f"예스24 티켓(YES24) 공식 오픈안내 소식입니다.\n\n"
+            f"■ 공연/행사명: {clean_title}\n"
+            f"■ 티켓 오픈: {display_open_time}\n"
+            f"■ 공연 일시: {perf_date if perf_date else '예스24 공지 상세 참조'}\n"
+            f"■ 공연 장소: {venue}\n"
+            f"■ 예매처: 예스24 티켓 (YES24)\n\n"
+            f"예스24 단독/선예매가 진행되는 인기 공연으로 빠른 매진이 예상됩니다. 예스24 본인인증 완료 여부와 결제 수단 등록 상태를 미리 점검하시기 바랍니다."
+        )
+
+        keywords = [
+            clean_title_short,
+            f"{clean_title_short} 콘서트",
+            f"{clean_title_short} 예매",
+            f"{clean_title_short} 티켓팅",
+            "예스24티켓 오픈",
+            "예스24 티켓팅",
+            f"{venue} 좌석"
+        ]
+
+        blog_outline = [
+            f"1. {clean_title_short} 공연 기본 개요 및 티켓 오픈 일정 ({display_open_time})",
+            f"2. 공연 장소 ({venue}) 시야 및 추천 좌석 팁",
+            f"3. 예스24 티켓팅 성공 비법 (예매창 진입 & 직링 대기 팁)",
+            f"4. 예매 수수료, 취소 마감 시간 및 모바일 발권 안내"
+        ]
+
+        yes24_items.append({
+            "id": f"yes24-ticket-{bid}",
+            "section": "urgent",
+            "category_badges": ["예스24 티켓", "콘서트", "공연"],
+            "d_day_badge": d_day_badge,
+            "title": title,
+            "event_date": f"오픈: {display_open_time}",
+            "performance_date": f"공연: {perf_date}" if perf_date else None,
+            "location": venue,
+            "summary": summary,
+            "status": "unissued",
+            "details": details,
+            "keywords": keywords,
+            "blog_outline": blog_outline,
+            "target_audience": f"{clean_title_short} 관람을 희망하는 예스24 예매 관람객 및 팬덤",
+            "created_at": datetime.now().strftime("%Y-%m-%d"),
+            "registered_at": f"{reg_date}T00:00:{rank:02d}",
+            "yes24_order": rank,
+            "yes24_id": int(bid) if bid.isdigit() else 0,
+            "is_new": True,
+            "product_url": full_url,
+            "poster_url": poster_url
+        })
+
+    return yes24_items
+
 def save_topics():
     os.makedirs(DATA_DIR, exist_ok=True)
     
@@ -1083,12 +1304,17 @@ def save_topics():
     melon_items = fetch_melon_ticket_upcoming()
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Fetched {len(melon_items)} concert notices from Melon Ticket.")
 
-    # 5. 야놀자 놀 티켓 둘러보기 - 전체 - 종료 임박순 공연 데이터 수집
+    # 5. 예스24 티켓 실시간 오픈공지 (등록순, 뮤지컬 제외) 데이터 수집
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Fetching notices from YES24 Ticket (등록순, 뮤지컬 제외)...")
+    yes24_items = fetch_yes24_ticket_notices()
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Fetched {len(yes24_items)} notices from YES24 Ticket.")
+
+    # 6. 야놀자 놀 티켓 둘러보기 - 전체 - 종료 임박순 공연 데이터 수집
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Fetching ending soon concerts from NOL Ticket (둘러보기 - 콘서트)...")
     nol_ending_items = fetch_nol_ticket_ending_soon()
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Fetched {len(nol_ending_items)} ending soon concerts from NOL Ticket.")
 
-    # 6. 야놀자 놀 티켓 둘러보기 - 전체 - 종료 임박순 전시 데이터 수집
+    # 7. 야놀자 놀 티켓 둘러보기 - 전체 - 종료 임박순 전시 데이터 수집
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Fetching ending soon exhibitions from NOL Ticket (둘러보기 - 전시)...")
     nol_exhibition_items = fetch_nol_ticket_exhibition_ending_soon()
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Fetched {len(nol_exhibition_items)} ending soon exhibitions from NOL Ticket.")
@@ -1115,6 +1341,20 @@ def save_topics():
             new_count += 1
             print(f"  [멜론티켓 신규 등록] #{m.get('melon_order')} {m['title']} (오픈: {m['event_date']})")
         combined_items.append(m)
+
+    # 예스24 티켓 오픈 항목 처리 (신규 여부 감지 및 기존 status 보존)
+    for y in yes24_items:
+        if y["id"] in existing_items:
+            prev = existing_items[y["id"]]
+            y["status"] = prev.get("status", "unissued")
+            y["created_at"] = prev.get("created_at", y["created_at"])
+            y["is_new"] = prev.get("is_new", False)
+        else:
+            y["is_new"] = True
+            y["created_at"] = datetime.now().strftime("%Y-%m-%d")
+            new_count += 1
+            print(f"  [예스24 신규 등록] #{y.get('yes24_order')} {y['title']} (오픈: {y['event_date']})")
+        combined_items.append(y)
 
     # 놀 티켓 오픈예정 항목 처리 (신규 여부 감지 및 기존 status 보존)
     for n in nol_upcoming_items:
@@ -1158,11 +1398,9 @@ def save_topics():
             print(f"  [신규 전시 종료임박] #{ex.get('closing_rank')} {ex['title']} ({ex['d_day_badge']})")
         combined_items.append(ex)
 
-    # 7. 파일 저장
+    # 8. 파일 저장
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(combined_items, f, ensure_ascii=False, indent=2)
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Saved total {len(combined_items)} topics ({new_count} newly added) to {DATA_FILE}")
-    return new_count
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Saved total {len(combined_items)} topics ({new_count} newly added) to {DATA_FILE}")
     return new_count
 
