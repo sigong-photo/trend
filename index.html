@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrendPulse | 블로그 트렌드 레이더</title>
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./static/style.css">
+</head>
+<body>
+  <!-- 다크 배경 앰비언트 글로우 -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <div class="container">
+    <!-- 최상단 헤더 & 브랜드 바 -->
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="brand-badge">
+          <span class="brand-pulse"></span>
+          <span class="brand-icon">⚡</span>
+          <span class="brand-name">TrendPulse</span>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">블로그 트렌드 & 글감 레이더</h1>
+          <p class="brand-desc">검색 급상승 키워드와 이번 주 놓치면 안 될 D-Day 문화 행사를 실시간 큐레이션합니다.</p>
+        </div>
+      </div>
+
+      <div class="header-tools">
+        <div class="live-status">
+          <span class="status-dot"></span>
+          <span>LIVE TRACKING</span>
+        </div>
+        
+        <!-- 신규만 보기 빠른 토글 버튼 -->
+        <button id="toggleNewOnlyBtn" class="toggle-new-btn" onclick="toggleNewOnly()" title="오늘 신규 등록된 소재만 필터링">
+          <span class="btn-sparkle">✨</span> 신규만 보기
+        </button>
+
+        <!-- 실시간 검색 인풋 -->
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="liveSearchInput" placeholder="카드 키워드 실시간 필터..." oninput="filterCardsLocally()">
+        </div>
+      </div>
+    </header>
+
+    <!-- 카테고리 필터 탭 -->
+    <nav class="category-tabs" id="categoryTabsNav">
+      <!-- JavaScript로 동적 렌더링 -->
+    </nav>
+
+    <!-- 통계 카드 그리드 -->
+    <section class="stats-grid" id="statsGrid">
+      <div class="stat-card stat-card-new">
+        <div class="stat-icon icon-sparkle">✨</div>
+        <div class="stat-info">
+          <span class="label">오늘 신규 등록</span>
+          <span class="value highlight-new" id="statNewToday">-</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-note">📝</div>
+        <div class="stat-info">
+          <span class="label">미발행 전체</span>
+          <span class="value" id="statUnissued">-</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-news">📢</div>
+        <div class="stat-info">
+          <span class="label">행사·뉴스</span>
+          <span class="value" id="statEvents">-</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-trend">📈</div>
+        <div class="stat-info">
+          <span class="label">최근 트렌드</span>
+          <span class="value" id="statTrends">-</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-calendar">📅</div>
+        <div class="stat-info">
+          <span class="label">이번 주 기한</span>
+          <span class="value highlight-urgent" id="statThisWeek">-</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-draft">🗓️</div>
+        <div class="stat-info">
+          <span class="label">이번 달 미리쓰기</span>
+          <span class="value" id="statDrafts">0</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-heart">🤍</div>
+        <div class="stat-info">
+          <span class="label">가볼래요 보관</span>
+          <span class="value" id="statWishlist">-</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-check">✔️</div>
+        <div class="stat-info">
+          <span class="label">발행 완료</span>
+          <span class="value highlight-done" id="statCompleted">-</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 섹션 1: 이번 주 안에 써야 할 소재 -->
+    <section class="topic-section" id="urgentSection">
+      <div class="section-title-wrap">
+        <div class="section-title">
+          <span class="title-pill urgent-pill">🔥 URGENT</span>
+          <span>이번 주 안에 써야 할 소재</span>
+        </div>
+        <span class="section-hint">클릭하면 상세 배경과 추천 목차를 볼 수 있습니다.</span>
+      </div>
+
+      <div class="card-grid" id="urgentCardGrid">
+        <!-- JavaScript로 동적 렌더링 -->
+      </div>
+    </section>
+
+    <!-- 섹션 2: 최근 트렌드 -->
+    <section class="topic-section" id="trendSection">
+      <div class="section-title-wrap">
+        <div class="section-title">
+          <span class="title-pill trend-pill">📈 TRENDING</span>
+          <span>최근 급상승 & 바이럴 트렌드</span>
+        </div>
+        <span class="section-hint">클릭하면 상세 배경과 추천 목차를 볼 수 있습니다.</span>
+      </div>
+
+      <div class="card-grid" id="trendCardGrid">
+        <!-- JavaScript로 동적 렌더링 -->
+      </div>
+    </section>
+  </div>
+
+  <!-- 상세 정보 모달 팝업 (다크 글래스모피즘) -->
+  <div id="modalOverlay" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal-card" id="modalCard">
+      <button class="modal-close-btn" onclick="closeModal()" title="닫기">&times;</button>
+      
+      <div class="modal-header">
+        <div class="modal-badges" id="modalBadges"></div>
+        <h2 class="modal-title" id="modalTitle">주제 상세 정보</h2>
+        
+        <div class="modal-meta" id="modalMeta">
+          <div class="modal-meta-row" id="modalCreatedRow">
+            <span>🕒 수집/등록일:</span> <strong id="modalCreatedAt"></strong>
+          </div>
+          <div class="modal-meta-row" id="modalDateRow" style="display:none;">
+            <span>🎫 티켓 오픈:</span> <strong id="modalDate"></strong>
+          </div>
+          <div class="modal-meta-row" id="modalPerfDateRow" style="display:none;">
+            <span>🎤 실제 공연:</span> <strong id="modalPerfDate" style="color: #38bdf8;"></strong>
+          </div>
+          <div class="modal-meta-row" id="modalLocationRow" style="display:none;">
+            <span>📍 장소:</span> <strong id="modalLocation"></strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <!-- 0. 포스터 이미지 (있을 경우) -->
+        <div class="modal-poster-wrap" id="modalPosterBlock" style="display:none; text-align: center; margin-bottom: 20px;">
+          <img id="modalPosterImg" src="" alt="포스터" onerror="this.parentElement.style.display='none'" style="max-height: 260px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); object-fit: cover;" />
+        </div>
+
+        <!-- 1. 상세 내용 -->
+        <div class="detail-block">
+          <div class="block-title">📖 주제 상세 배경 & 핵심 정보</div>
+          <div class="block-content detail-text" id="modalDetails"></div>
+        </div>
+
+        <!-- 2. 타겟 독자 -->
+        <div class="detail-block" id="modalAudienceBlock" style="display:none;">
+          <div class="block-title">🎯 추천 타겟 독자</div>
+          <div class="block-content audience-box" id="modalAudience"></div>
+        </div>
+
+        <!-- 3. 추천 블로그 목차 -->
+        <div class="detail-block" id="modalOutlineBlock" style="display:none;">
+          <div class="block-title-row">
+            <span class="block-title">📝 블로그 글쓰기 추천 목차 (H2/H3 구조)</span>
+            <button class="outline-copy-btn" onclick="copyOutline()">📋 목차 전체 복사</button>
+          </div>
+          <div class="outline-list" id="modalOutline"></div>
+        </div>
+
+        <!-- 4. 추천 검색 키워드 태그 -->
+        <div class="detail-block" id="modalKeywordsBlock" style="display:none;">
+          <div class="block-title">🏷️ 포털 상위 유입 추천 키워드 (클릭하여 복사)</div>
+          <div class="keywords-wrap" id="modalKeywords"></div>
+        </div>
+
+        <!-- 5. 포털 바로가기 링크 버튼 -->
+        <div class="detail-block portal-actions">
+          <div class="block-title">🔍 실시간 포털 정보 확인</div>
+          <div class="portal-btn-group">
+            <a id="nolTicketBtn" target="_blank" class="portal-btn nol-ticket-btn" style="display:none;">
+              <span>🎟️</span> 놀 티켓 예매 페이지
+            </a>
+            <a id="naverSearchBtn" target="_blank" class="portal-btn naver-btn">
+              <span>N</span> 네이버 검색 바로가기
+            </a>
+            <a id="naverMapBtn" target="_blank" class="portal-btn map-btn" style="display:none;">
+              <span>📍</span> 네이버 지도 검색
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 모달 푸터 상태 액션 바 -->
+      <div class="modal-footer">
+        <span class="modal-footer-label">소재 진행 상태:</span>
+        <div class="modal-status-buttons" id="modalStatusButtons">
+          <button class="footer-btn wishlist-btn" id="modalWishlistBtn">🤍 가볼래요</button>
+          <button class="footer-btn visit-btn" id="modalVisitBtn">방문 완료</button>
+          <button class="footer-btn complete-btn" id="modalDoneBtn">✔️ 발행 완료</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 메시지 -->
+  <div id="toast" class="toast-notification"></div>
+
+  <script>
+    const CATEGORIES = [
+      "전체", "✨ 신규", "놀 티켓 오픈예정", "종료 임박 콘서트", "종료 임박 전시", "콘서트", "공연", "전시", "팝업",
+      "축제", "여행", "먹거리", "맛집", "쇼핑", "건강", "부동산", "생활정보"
+    ];
+
+    let allTopics = [];
+    let currentCategory = "전체";
+    let onlyNewFilterActive = false;
+    let currentTopicData = null;
+
+    // 로컬스토리지 상태 관리
+    function getStoredStatuses() {
+      try {
+        return JSON.parse(localStorage.getItem("trendpulse_topic_status") || "{}");
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function setStoredStatus(id, status) {
+      const statuses = getStoredStatuses();
+      statuses[id] = status;
+      localStorage.setItem("trendpulse_topic_status", JSON.stringify(statuses));
+    }
+
+    function getDeletedIds() {
+      try {
+        return JSON.parse(localStorage.getItem("trendpulse_deleted_ids") || "[]");
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function addDeletedId(id) {
+      const deleted = getDeletedIds();
+      if (!deleted.includes(id)) {
+        deleted.push(id);
+        localStorage.setItem("trendpulse_deleted_ids", JSON.stringify(deleted));
+      }
+    }
+
+    // 초기 데이터 로드
+    async function loadData() {
+      try {
+        const res = await fetch("./data/topics.json");
+        if (!res.ok) throw new Error("Failed to load topics.json");
+        const data = await res.json();
+        
+        const storedStatuses = getStoredStatuses();
+        const deletedIds = getDeletedIds();
+
+        // 상태 병합 및 삭제된 항목 필터링
+        allTopics = data.filter(item => !deletedIds.includes(item.id)).map(item => {
+          if (storedStatuses[item.id]) {
+            item.status = storedStatuses[item.id];
+          }
+          return item;
+        });
+
+        // URL 쿼리 파라미터 확인 (예: ?category=종료%20임박%20콘서트)
+        const params = new URLSearchParams(window.location.search);
+        const urlCat = params.get("category");
+        if (urlCat && CATEGORIES.includes(urlCat)) {
+          currentCategory = urlCat;
+        }
+
+        renderCategoryTabs();
+        updateStats();
+        renderTopics();
+      } catch (err) {
+        console.error("Error loading topics:", err);
+        showToast("데이터를 불러오지 못했습니다.");
+      }
+    }
+
+    // 통계 계산 및 렌더링
+    function updateStats() {
+      const todayStr = "2026-09-26";
+      const newToday = allTopics.filter(t => t.is_new === true || t.created_at === todayStr).length;
+      const unissued = allTopics.filter(t => t.status === "unissued").length;
+      const events = allTopics.filter(t => (t.category_badges || []).includes("행사·뉴스")).length;
+      const trends = allTopics.filter(t => (t.category_badges || []).includes("트렌드")).length;
+      const thisWeek = allTopics.filter(t => t.section === "urgent").length;
+      const wishlist = allTopics.filter(t => t.status === "wishlist").length;
+      const completed = allTopics.filter(t => t.status === "done").length;
+
+      document.getElementById("statNewToday").textContent = newToday;
+      document.getElementById("statUnissued").textContent = unissued;
+      document.getElementById("statEvents").textContent = events;
+      document.getElementById("statTrends").textContent = trends;
+      document.getElementById("statThisWeek").textContent = thisWeek;
+      document.getElementById("statWishlist").textContent = wishlist;
+      document.getElementById("statCompleted").textContent = completed;
+    }
+
+    // 카테고리 탭 렌더링
+    function renderCategoryTabs() {
+      const nav = document.getElementById("categoryTabsNav");
+      nav.innerHTML = "";
+
+      CATEGORIES.forEach(cat => {
+        const a = document.createElement("a");
+        a.href = `javascript:selectCategory('${cat}')`;
+        let cls = "tab-btn";
+        if (cat === currentCategory) cls += " active";
+        if (cat === "✨ 신규") cls += " tab-btn-new";
+        else if (cat === "종료 임박 콘서트") cls += " tab-btn-urgent";
+        else if (cat === "종료 임박 전시") cls += " tab-btn-exhibition";
+        a.className = cls;
+        a.textContent = cat;
+        nav.appendChild(a);
+      });
+    }
+
+    function selectCategory(cat) {
+      currentCategory = cat;
+      const url = new URL(window.location);
+      if (cat === "전체") {
+        url.searchParams.delete("category");
+      } else {
+        url.searchParams.set("category", cat);
+      }
+      window.history.replaceState({}, "", url);
+
+      renderCategoryTabs();
+      renderTopics();
+    }
+
+    // 카드 목록 렌더링
+    function renderTopics() {
+      let filtered = [...allTopics];
+      const todayStr = "2026-09-26";
+
+      if (currentCategory === "✨ 신규") {
+        filtered = filtered.filter(t => t.is_new === true || t.created_at === todayStr);
+      } else if (currentCategory !== "전체") {
+        filtered = filtered.filter(t => (t.category_badges || []).includes(currentCategory));
+      }
+
+      // 정렬 처리
+      if (currentCategory === "종료 임박 콘서트" || currentCategory === "종료 임박 전시") {
+        filtered.sort((a, b) => {
+          const rankA = a.closing_rank || 999;
+          const rankB = b.closing_rank || 999;
+          if (rankA !== rankB) return rankA - rankB;
+          return (a.end_date_sort || "9999-12-31").localeCompare(b.end_date_sort || "9999-12-31");
+        });
+      } else if (["놀 티켓 오픈예정", "콘서트", "공연", "전시"].includes(currentCategory)) {
+        filtered.sort((a, b) => {
+          const timeA = a.registered_at || a.created_at || "";
+          const timeB = b.registered_at || b.created_at || "";
+          return timeB.localeCompare(timeA);
+        });
+      }
+
+      const urgentItems = filtered.filter(t => t.section === "urgent");
+      const trendItems = filtered.filter(t => t.section === "trend");
+
+      const urgentGrid = document.getElementById("urgentCardGrid");
+      const trendGrid = document.getElementById("trendCardGrid");
+      const urgentSection = document.getElementById("urgentSection");
+      const trendSection = document.getElementById("trendSection");
+
+      urgentGrid.innerHTML = urgentItems.map(createCardHtml).join("");
+      trendGrid.innerHTML = trendItems.map(createCardHtml).join("");
+
+      urgentSection.style.display = urgentItems.length > 0 ? "block" : "none";
+      trendSection.style.display = trendItems.length > 0 ? "block" : "none";
+
+      filterCardsLocally();
+    }
+
+    function createCardHtml(item) {
+      const isNew = item.is_new ? true : false;
+      const badgesHtml = [
+        isNew ? `<span class="badge badge-new">✨ NEW</span>` : "",
+        ...(item.category_badges || []).map(b => `<span class="badge badge-cat">${b}</span>`),
+        item.d_day_badge ? `<span class="badge badge-dday">${item.d_day_badge}</span>` : ""
+      ].join("");
+
+      const regDate = (item.registered_at ? item.registered_at.slice(0, 10) : item.created_at) || "";
+
+      return `
+        <div class="topic-card" id="${item.id}" onclick="openDetailModal('${item.id}')" data-title="${escapeHtml(item.title)}" data-summary="${escapeHtml(item.summary || '')}" data-is-new="${isNew}">
+          <div class="card-glow-border"></div>
+          <div class="card-header">
+            <div class="badges">${badgesHtml}</div>
+            <div class="card-actions" onclick="event.stopPropagation()">
+              <button class="icon-btn edit-btn" onclick="openDetailModal('${item.id}')" title="상세 목차 보기">🔍</button>
+              <button class="icon-btn delete-btn" onclick="deleteTopic('${item.id}')" title="삭제">🗑️</button>
+            </div>
+          </div>
+          
+          <h3 class="card-title">${escapeHtml(item.title)}</h3>
+          
+          <div class="card-meta">
+            ${item.event_date ? `<div class="meta-row"><span class="meta-icon">🎫</span> <span>${escapeHtml(item.event_date)}</span></div>` : ""}
+            ${item.performance_date ? `<div class="meta-row meta-perf-date"><span class="meta-icon">🎤</span> <span>${escapeHtml(item.performance_date)}</span></div>` : ""}
+            ${item.location ? `<div class="meta-row"><span class="meta-icon">📍</span> <span>${escapeHtml(item.location)}</span></div>` : ""}
+            <div class="meta-row meta-date">
+              <span class="meta-icon">🕒</span> 
+              <span>등록: ${regDate}${isNew ? ` <em class="new-tag">오늘 신규</em>` : ""}</span>
+            </div>
+          </div>
+
+          <p class="card-summary">${escapeHtml(item.summary || "")}</p>
+
+          <div class="card-click-guide">
+            <span>상세 가이드 & 목차 보기</span>
+            <span class="arrow-icon">➔</span>
+          </div>
+
+          <div class="card-footer" onclick="event.stopPropagation()">
+            <button class="footer-btn wishlist-btn ${item.status === 'wishlist' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'wishlist')">🤍 가볼래요</button>
+            <button class="footer-btn visit-btn ${item.status === 'visited' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'visited')">방문 완료</button>
+            <button class="footer-btn complete-btn ${item.status === 'done' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'done')">✔️ 발행 완료</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    // 상세 모달 열기
+    function openDetailModal(id) {
+      const topic = allTopics.find(t => t.id === id);
+      if (!topic) return;
+      currentTopicData = topic;
+
+      const badgesContainer = document.getElementById("modalBadges");
+      badgesContainer.innerHTML = "";
+      
+      if (topic.is_new) {
+        const newSpan = document.createElement("span");
+        newSpan.className = "badge badge-new";
+        newSpan.textContent = "✨ NEW";
+        badgesContainer.appendChild(newSpan);
+      }
+
+      (topic.category_badges || []).forEach(b => {
+        const span = document.createElement("span");
+        span.className = "badge badge-cat";
+        span.textContent = b;
+        badgesContainer.appendChild(span);
+      });
+      if (topic.d_day_badge) {
+        const dday = document.createElement("span");
+        dday.className = "badge badge-dday";
+        dday.textContent = topic.d_day_badge;
+        badgesContainer.appendChild(dday);
+      }
+
+      document.getElementById("modalTitle").textContent = topic.title;
+
+      const createdEl = document.getElementById("modalCreatedAt");
+      if (topic.registered_at) {
+        createdEl.textContent = topic.registered_at.replace("T", " ") + (topic.is_new ? " (오늘 신규)" : "");
+      } else if (topic.created_at) {
+        createdEl.textContent = topic.created_at + (topic.is_new ? " (오늘 신규)" : "");
+      } else {
+        createdEl.textContent = "최근";
+      }
+
+      const posterBlock = document.getElementById("modalPosterBlock");
+      const posterImg = document.getElementById("modalPosterImg");
+      if (topic.poster_url) {
+        posterImg.src = topic.poster_url;
+        posterBlock.style.display = "block";
+      } else {
+        posterBlock.style.display = "none";
+      }
+
+      const dateRow = document.getElementById("modalDateRow");
+      if (topic.event_date) {
+        document.getElementById("modalDate").textContent = topic.event_date;
+        dateRow.style.display = "flex";
+      } else {
+        dateRow.style.display = "none";
+      }
+
+      const perfDateRow = document.getElementById("modalPerfDateRow");
+      if (topic.performance_date) {
+        document.getElementById("modalPerfDate").textContent = topic.performance_date;
+        perfDateRow.style.display = "flex";
+      } else {
+        perfDateRow.style.display = "none";
+      }
+
+      const locRow = document.getElementById("modalLocationRow");
+      if (topic.location) {
+        document.getElementById("modalLocation").textContent = topic.location;
+        locRow.style.display = "flex";
+      } else {
+        locRow.style.display = "none";
+      }
+
+      document.getElementById("modalDetails").textContent = topic.details || topic.summary;
+
+      const audienceBlock = document.getElementById("modalAudienceBlock");
+      if (topic.target_audience) {
+        document.getElementById("modalAudience").textContent = topic.target_audience;
+        audienceBlock.style.display = "block";
+      } else {
+        audienceBlock.style.display = "none";
+      }
+
+      const outlineBlock = document.getElementById("modalOutlineBlock");
+      const outlineList = document.getElementById("modalOutline");
+      outlineList.innerHTML = "";
+      if (topic.blog_outline && topic.blog_outline.length > 0) {
+        topic.blog_outline.forEach(line => {
+          const item = document.createElement("div");
+          item.className = "outline-item";
+          item.textContent = line;
+          outlineList.appendChild(item);
+        });
+        outlineBlock.style.display = "block";
+      } else {
+        outlineBlock.style.display = "none";
+      }
+
+      const keywordsBlock = document.getElementById("modalKeywordsBlock");
+      const keywordsWrap = document.getElementById("modalKeywords");
+      keywordsWrap.innerHTML = "";
+      if (topic.keywords && topic.keywords.length > 0) {
+        topic.keywords.forEach(kw => {
+          const chip = document.createElement("span");
+          chip.className = "keyword-chip";
+          chip.textContent = "#" + kw;
+          chip.title = "클릭하여 키워드 복사";
+          chip.onclick = () => copyText(kw, `키워드 '${kw}'가 복사되었습니다!`);
+          keywordsWrap.appendChild(chip);
+        });
+        keywordsBlock.style.display = "block";
+      } else {
+        keywordsBlock.style.display = "none";
+      }
+
+      const nolBtn = document.getElementById("nolTicketBtn");
+      if (topic.product_url) {
+        nolBtn.href = topic.product_url;
+        nolBtn.style.display = "inline-flex";
+      } else {
+        nolBtn.style.display = "none";
+      }
+
+      const query = encodeURIComponent(topic.title);
+      document.getElementById("naverSearchBtn").href = `https://search.naver.com/search.naver?query=${query}`;
+      
+      const mapBtn = document.getElementById("naverMapBtn");
+      if (topic.location && !topic.location.includes("놀 티켓")) {
+        mapBtn.href = `https://map.naver.com/p/search/${encodeURIComponent(topic.location)}`;
+        mapBtn.style.display = "inline-flex";
+      } else {
+        mapBtn.style.display = "none";
+      }
+
+      const wishBtn = document.getElementById("modalWishlistBtn");
+      const visitBtn = document.getElementById("modalVisitBtn");
+      const doneBtn = document.getElementById("modalDoneBtn");
+
+      wishBtn.className = "footer-btn wishlist-btn " + (topic.status === "wishlist" ? "active" : "");
+      visitBtn.className = "footer-btn visit-btn " + (topic.status === "visited" ? "active" : "");
+      doneBtn.className = "footer-btn complete-btn " + (topic.status === "done" ? "active" : "");
+
+      wishBtn.onclick = () => updateStatus(topic.id, "wishlist");
+      visitBtn.onclick = () => updateStatus(topic.id, "visited");
+      doneBtn.onclick = () => updateStatus(topic.id, "done");
+
+      document.getElementById("modalOverlay").classList.add("active");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      document.getElementById("modalOverlay").classList.remove("active");
+      document.body.style.overflow = "auto";
+    }
+
+    function closeModalOnOverlay(e) {
+      if (e.target.id === "modalOverlay") {
+        closeModal();
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
+    function copyText(text, successMsg) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(successMsg);
+      }).catch(() => {
+        showToast("복사에 실패했습니다.");
+      });
+    }
+
+    function copyOutline() {
+      if (!currentTopicData || !currentTopicData.blog_outline) return;
+      const text = currentTopicData.blog_outline.join("\n");
+      copyText(text, "추천 블로그 목차가 클립보드에 복사되었습니다!");
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2400);
+    }
+
+    function updateStatus(id, status) {
+      const topic = allTopics.find(t => t.id === id);
+      if (topic) {
+        topic.status = (topic.status === status) ? "unissued" : status;
+        setStoredStatus(id, topic.status);
+        updateStats();
+        renderTopics();
+        if (currentTopicData && currentTopicData.id === id) {
+          openDetailModal(id);
+        }
+        showToast(`상태가 변경되었습니다: ${topic.status === 'wishlist' ? '🤍 가볼래요' : topic.status === 'visited' ? '방문 완료' : topic.status === 'done' ? '✔️ 발행 완료' : '미발행'}`);
+      }
+    }
+
+    function deleteTopic(id) {
+      if (!confirm("소재 카드를 삭제하시겠습니까?")) return;
+      addDeletedId(id);
+      allTopics = allTopics.filter(t => t.id !== id);
+      updateStats();
+      renderTopics();
+      closeModal();
+      showToast("소재가 삭제되었습니다.");
+    }
+
+    function toggleNewOnly() {
+      onlyNewFilterActive = !onlyNewFilterActive;
+      const btn = document.getElementById("toggleNewOnlyBtn");
+      if (onlyNewFilterActive) {
+        btn.classList.add("active");
+        showToast("✨ 오늘 신규 등록된 소재만 표시합니다.");
+      } else {
+        btn.classList.remove("active");
+        showToast("전체 소재를 표시합니다.");
+      }
+      filterCardsLocally();
+    }
+
+    function filterCardsLocally() {
+      const query = document.getElementById("liveSearchInput").value.trim().toLowerCase();
+      const cards = document.querySelectorAll(".topic-card");
+      cards.forEach(card => {
+        const title = (card.getAttribute("data-title") || "").toLowerCase();
+        const summary = (card.getAttribute("data-summary") || "").toLowerCase();
+        const isNew = card.getAttribute("data-is-new") === "true";
+
+        const matchesQuery = !query || title.includes(query) || summary.includes(query);
+        const matchesNewFilter = !onlyNewFilterActive || isNew;
+
+        if (matchesQuery && matchesNewFilter) {
+          card.style.display = "flex";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    }
+
+    // 초기 실행
+    window.addEventListener("DOMContentLoaded", loadData);
+  </script>
+</body>
+</html>
