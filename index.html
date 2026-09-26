@@ -11,6 +11,24 @@
   <link rel="stylesheet" href="./static/style.css">
 </head>
 <body>
+  <!-- 비공개 접속 잠금 화면 (PIN: 1029) -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-badge">
+        <span class="auth-icon">🔒</span>
+        <span class="auth-badge-text">PRIVATE DASHBOARD</span>
+      </div>
+      <h2 class="auth-title">TrendPulse 트렌드 레이더</h2>
+      <p class="auth-desc">보안을 위해 4자리 접속 PIN 번호를 입력해 주세요.</p>
+      
+      <div class="auth-input-wrap">
+        <input type="password" id="pinInput" maxlength="8" placeholder="••••" autocomplete="off" autofocus onkeydown="if(event.key==='Enter') verifyPin()" />
+        <button class="auth-submit-btn" onclick="verifyPin()">접속하기 ➔</button>
+      </div>
+      <div id="authErrorMsg" class="auth-error-msg"></div>
+    </div>
+  </div>
+
   <!-- 다크 배경 앰비언트 글로우 -->
   <div class="ambient-glow glow-1"></div>
   <div class="ambient-glow glow-2"></div>
@@ -35,6 +53,11 @@
           <span class="status-dot"></span>
           <span>LIVE TRACKING</span>
         </div>
+
+        <!-- 대시보드 잠금 버튼 -->
+        <button class="lock-btn" onclick="lockApp()" title="대시보드 잠금">
+          <span>🔒</span> 잠금
+        </button>
         
         <!-- 신규만 보기 빠른 토글 버튼 -->
         <button id="toggleNewOnlyBtn" class="toggle-new-btn" onclick="toggleNewOnly()" title="오늘 신규 등록된 소재만 필터링">
@@ -706,8 +729,69 @@
       });
     }
 
+    /* ==========================================================
+       비공개 접속 잠금 기능 (PIN: 1029)
+       ========================================================== */
+    const CORRECT_PIN = "1029";
+
+    function checkAuth() {
+      const isAuth = localStorage.getItem("trendpulse_pin_auth") === "true" ||
+                     sessionStorage.getItem("trendpulse_pin_auth") === "true";
+      const overlay = document.getElementById("authOverlay");
+      if (isAuth) {
+        if (overlay) overlay.classList.add("hidden");
+      } else {
+        if (overlay) {
+          overlay.classList.remove("hidden");
+          setTimeout(() => {
+            const input = document.getElementById("pinInput");
+            if (input) input.focus();
+          }, 150);
+        }
+      }
+    }
+
+    function verifyPin() {
+      const pinInput = document.getElementById("pinInput");
+      const errorMsg = document.getElementById("authErrorMsg");
+      const card = document.querySelector(".auth-card");
+      const val = pinInput.value.trim();
+
+      if (val === CORRECT_PIN) {
+        localStorage.setItem("trendpulse_pin_auth", "true");
+        sessionStorage.setItem("trendpulse_pin_auth", "true");
+        const overlay = document.getElementById("authOverlay");
+        overlay.classList.add("hidden");
+        showToast("🔓 인증되었습니다. 환영합니다!");
+      } else {
+        errorMsg.textContent = "비밀번호가 일치하지 않습니다.";
+        card.classList.add("shake");
+        setTimeout(() => card.classList.remove("shake"), 400);
+        pinInput.value = "";
+        pinInput.focus();
+      }
+    }
+
+    function lockApp() {
+      localStorage.removeItem("trendpulse_pin_auth");
+      sessionStorage.removeItem("trendpulse_pin_auth");
+      const overlay = document.getElementById("authOverlay");
+      const pinInput = document.getElementById("pinInput");
+      const errorMsg = document.getElementById("authErrorMsg");
+      if (errorMsg) errorMsg.textContent = "";
+      if (pinInput) pinInput.value = "";
+      if (overlay) {
+        overlay.classList.remove("hidden");
+        pinInput.focus();
+      }
+      showToast("🔒 대시보드가 잠겼습니다.");
+    }
+
     // 초기 실행
-    window.addEventListener("DOMContentLoaded", loadData);
+    window.addEventListener("DOMContentLoaded", () => {
+      checkAuth();
+      loadData();
+    });
   </script>
 </body>
 </html>
