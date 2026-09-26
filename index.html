@@ -260,7 +260,7 @@
 
   <script>
     const CATEGORIES = [
-      "전체", "✨ 신규", "놀 티켓 오픈예정", "종료 임박 콘서트", "종료 임박 전시", "콘서트", "공연", "전시", "팝업",
+      "전체", "✨ 신규", "멜론 티켓 오픈소식", "놀 티켓 오픈예정", "종료 임박 콘서트", "종료 임박 전시", "콘서트", "공연", "전시", "팝업",
       "축제", "여행", "먹거리", "맛집", "쇼핑", "건강", "부동산", "생활정보"
     ];
 
@@ -365,6 +365,7 @@
         let cls = "tab-btn";
         if (cat === currentCategory) cls += " active";
         if (cat === "✨ 신규") cls += " tab-btn-new";
+        else if (cat === "멜론 티켓 오픈소식") cls += " tab-btn-melon";
         else if (cat === "종료 임박 콘서트") cls += " tab-btn-urgent";
         else if (cat === "종료 임박 전시") cls += " tab-btn-exhibition";
         a.className = cls;
@@ -405,6 +406,13 @@
           const rankB = b.closing_rank || 999;
           if (rankA !== rankB) return rankA - rankB;
           return (a.end_date_sort || "9999-12-31").localeCompare(b.end_date_sort || "9999-12-31");
+        });
+      } else if (currentCategory === "멜론 티켓 오픈소식") {
+        filtered.sort((a, b) => {
+          const orderA = a.melon_order !== undefined ? a.melon_order : 999;
+          const orderB = b.melon_order !== undefined ? b.melon_order : 999;
+          if (orderA !== orderB) return orderA - orderB;
+          return (b.id || "").localeCompare(a.id || "");
         });
       } else if (["놀 티켓 오픈예정", "콘서트", "공연", "전시"].includes(currentCategory)) {
         filtered.sort((a, b) => {
@@ -603,6 +611,13 @@
       const nolBtn = document.getElementById("nolTicketBtn");
       if (topic.product_url) {
         nolBtn.href = topic.product_url;
+        if (topic.product_url.includes("melon.com")) {
+          nolBtn.className = "portal-btn melon-ticket-btn";
+          nolBtn.innerHTML = "<span>🍈</span> 멜론 티켓 오픈소식 바로가기";
+        } else {
+          nolBtn.className = "portal-btn nol-ticket-btn";
+          nolBtn.innerHTML = "<span>🎟️</span> 놀 티켓 예매 페이지";
+        }
         nolBtn.style.display = "inline-flex";
       } else {
         nolBtn.style.display = "none";
