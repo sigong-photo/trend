@@ -638,8 +638,13 @@
       document.getElementById("naverSearchBtn").href = `https://search.naver.com/search.naver?query=${query}`;
       
       const mapBtn = document.getElementById("naverMapBtn");
-      if (topic.location && !topic.location.includes("놀 티켓") && !topic.product_url?.includes("melon.com") && !topic.product_url?.includes("yes24.com")) {
+      if (topic.product_url?.includes("melon.com") || topic.product_url?.includes("yes24.com")) {
+        mapBtn.href = `https://search.naver.com/search.naver?query=${query}`;
+        mapBtn.innerHTML = "<span>🔍</span> 네이버 검색 결과";
+        mapBtn.style.display = "inline-flex";
+      } else if (topic.location && !topic.location.includes("놀 티켓")) {
         mapBtn.href = `https://map.naver.com/p/search/${encodeURIComponent(topic.location)}`;
+        mapBtn.innerHTML = "<span>📍</span> 네이버 지도 검색";
         mapBtn.style.display = "inline-flex";
       } else {
         mapBtn.style.display = "none";
