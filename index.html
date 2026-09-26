@@ -638,7 +638,7 @@
       document.getElementById("naverSearchBtn").href = `https://search.naver.com/search.naver?query=${query}`;
       
       const mapBtn = document.getElementById("naverMapBtn");
-      if (topic.location && !topic.location.includes("놀 티켓")) {
+      if (topic.location && !topic.location.includes("놀 티켓") && !topic.product_url?.includes("melon.com") && !topic.product_url?.includes("yes24.com")) {
         mapBtn.href = `https://map.naver.com/p/search/${encodeURIComponent(topic.location)}`;
         mapBtn.style.display = "inline-flex";
       } else {
