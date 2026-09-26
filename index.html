@@ -260,7 +260,7 @@
 
   <script>
     const CATEGORIES = [
-      "전체", "✨ 신규", "멜론 티켓 오픈소식", "놀 티켓 오픈예정", "종료 임박 콘서트", "종료 임박 전시", "콘서트", "공연", "전시", "팝업",
+      "전체", "✨ 신규", "멜론 티켓 오픈소식", "예스24 티켓", "놀 티켓 오픈예정", "종료 임박 콘서트", "종료 임박 전시", "콘서트", "공연", "전시", "팝업",
       "축제", "여행", "먹거리", "맛집", "쇼핑", "건강", "부동산", "생활정보"
     ];
 
@@ -366,6 +366,7 @@
         if (cat === currentCategory) cls += " active";
         if (cat === "✨ 신규") cls += " tab-btn-new";
         else if (cat === "멜론 티켓 오픈소식") cls += " tab-btn-melon";
+        else if (cat === "예스24 티켓") cls += " tab-btn-yes24";
         else if (cat === "종료 임박 콘서트") cls += " tab-btn-urgent";
         else if (cat === "종료 임박 전시") cls += " tab-btn-exhibition";
         a.className = cls;
@@ -413,6 +414,13 @@
           const orderB = b.melon_order !== undefined ? b.melon_order : 999;
           if (orderA !== orderB) return orderA - orderB;
           return (b.id || "").localeCompare(a.id || "");
+        });
+      } else if (currentCategory === "예스24 티켓") {
+        filtered.sort((a, b) => {
+          const orderA = a.yes24_order !== undefined ? a.yes24_order : 999;
+          const orderB = b.yes24_order !== undefined ? b.yes24_order : 999;
+          if (orderA !== orderB) return orderA - orderB;
+          return parseInt(b.yes24_id || 0) - parseInt(a.yes24_id || 0);
         });
       } else if (["놀 티켓 오픈예정", "콘서트", "공연", "전시"].includes(currentCategory)) {
         filtered.sort((a, b) => {
