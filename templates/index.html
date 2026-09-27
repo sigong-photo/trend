@@ -127,13 +127,6 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon icon-heart">🤍</div>
-        <div class="stat-info">
-          <span class="label">가볼래요 보관</span>
-          <span class="value">{{ stats.wishlist }}</span>
-        </div>
-      </div>
-      <div class="stat-card">
         <div class="stat-icon icon-check">✔️</div>
         <div class="stat-info">
           <span class="label">발행 완료</span>
@@ -200,8 +193,6 @@
             </div>
 
             <div class="card-footer" onclick="event.stopPropagation()">
-              <button class="footer-btn wishlist-btn {% if item.status == 'wishlist' %}active{% endif %}" onclick="updateStatus('{{ item.id }}', 'wishlist')">🤍 가볼래요</button>
-              <button class="footer-btn visit-btn" onclick="updateStatus('{{ item.id }}', 'visited')">방문 완료</button>
               <button class="footer-btn complete-btn {% if item.status == 'done' %}active{% endif %}" onclick="updateStatus('{{ item.id }}', 'done')">✔️ 발행 완료</button>
             </div>
           </div>
@@ -255,8 +246,6 @@
             </div>
 
             <div class="card-footer" onclick="event.stopPropagation()">
-              <button class="footer-btn wishlist-btn {% if item.status == 'wishlist' %}active{% endif %}" onclick="updateStatus('{{ item.id }}', 'wishlist')">🤍 가볼래요</button>
-              <button class="footer-btn visit-btn" onclick="updateStatus('{{ item.id }}', 'visited')">방문 완료</button>
               <button class="footer-btn complete-btn {% if item.status == 'done' %}active{% endif %}" onclick="updateStatus('{{ item.id }}', 'done')">✔️ 발행 완료</button>
             </div>
           </div>
@@ -344,8 +333,6 @@
       <div class="modal-footer">
         <span class="modal-footer-label">소재 진행 상태:</span>
         <div class="modal-status-buttons" id="modalStatusButtons">
-          <button class="footer-btn wishlist-btn" id="modalWishlistBtn">🤍 가볼래요</button>
-          <button class="footer-btn visit-btn" id="modalVisitBtn">방문 완료</button>
           <button class="footer-btn complete-btn" id="modalDoneBtn">✔️ 발행 완료</button>
         </div>
       </div>
@@ -513,15 +500,8 @@
         mapBtn.style.display = "inline-flex";
 
         // 모달 푸터 상태 버튼 연동
-        const wishBtn = document.getElementById("modalWishlistBtn");
-        const visitBtn = document.getElementById("modalVisitBtn");
         const doneBtn = document.getElementById("modalDoneBtn");
-
-        wishBtn.className = "footer-btn wishlist-btn " + (topic.status === "wishlist" ? "active" : "");
         doneBtn.className = "footer-btn complete-btn " + (topic.status === "done" ? "active" : "");
-
-        wishBtn.onclick = () => updateStatus(topic.id, "wishlist");
-        visitBtn.onclick = () => updateStatus(topic.id, "visited");
         doneBtn.onclick = () => updateStatus(topic.id, "done");
 
         // 모달 열기

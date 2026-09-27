@@ -120,9 +120,12 @@ async def update_status(payload: StatusUpdate):
     if not target:
         raise HTTPException(status_code=404, detail="Topic not found")
     
-    target["status"] = payload.status
+    if target.get("status") == payload.status:
+        target["status"] = "unissued"
+    else:
+        target["status"] = payload.status
     write_topics(topics)
-    return {"success": True, "id": payload.id, "status": payload.status}
+    return {"success": True, "id": payload.id, "status": target["status"]}
 
 @app.get("/api/topic/{topic_id}")
 async def get_topic_detail(topic_id: str):
